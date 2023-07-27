@@ -1,4 +1,7 @@
+import java.awt.Color
+import java.awt.Graphics2D
 import scala.util.Random
+import java.awt.RenderingHints
 
 def createBoard(width: Int, height: Int): Board = {
   val cells = Array.ofDim[Cell](width, height)
@@ -89,4 +92,48 @@ def printBoard(board: Board): Unit = {
     }
   }
   print("└" + "─" * (board.width * 2 - 1) + "┘\n")
+}
+
+def printBoardToGraphics(
+    board: Board,
+    g: Graphics2D,
+    cellSize: Int,
+    xOffset: Int,
+    yOffset: Int
+): Unit = {
+  g.setRenderingHint(
+    RenderingHints.KEY_ANTIALIASING,
+    RenderingHints.VALUE_ANTIALIAS_ON
+  )
+  g.setColor(Color.BLACK)
+  g.fillRect(0, 0, board.width * cellSize, board.height * cellSize)
+  for (x <- 0 until board.width) {
+    for (y <- 0 until board.height) {
+      val cell = board.get(x, y)
+      val isAlive = cell.alive
+      val isAboutToDie =
+        !isAlive && (getNeighbors(board, x, y) ++ getDiagonalNeighbors(
+          board,
+          x,
+          y
+        )).count(_.alive) == 2
+      if (isAlive) {
+        g.setColor(Color.GREEN)
+        g.fillOval(
+          x * cellSize + xOffset,
+          y * cellSize + yOffset,
+          cellSize,
+          cellSize
+        )
+      } else if (isAboutToDie) {
+        g.setColor(Color.RED)
+        g.fillOval(
+          x * cellSize + xOffset,
+          y * cellSize + yOffset,
+          cellSize,
+          cellSize
+        )
+      }
+    }
+  }
 }
